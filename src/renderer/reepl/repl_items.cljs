@@ -16,7 +16,8 @@
    [:div.text-disabled.font-bold "=>"]
    [:div.flex-1.cursor-pointer.break-words
     {:on-click (partial (:set-text opts) text)}
-    [codemirror/colored-text text]]])
+    text
+    #_[codemirror/colored-text text]]])
 
 (defmethod repl-item :log
   [{:keys [value]} opts]

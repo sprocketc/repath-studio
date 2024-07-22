@@ -2,8 +2,4 @@
 @import 'tailwindcss/components.css';
 @import 'tailwindcss/utilities.css';
 
-@import "codemirror/lib/codemirror.css";
-@import "codemirror/addon/hint/show-hint.css";
-@import "codemirror/theme/tomorrow-night-eighties.css";
-
 @import-glob "src/renderer/**/*.css";

@@ -1,13 +1,10 @@
 (ns renderer.reepl.codemirror
   (:require
-   ["codemirror" :as codemirror]
-   ["codemirror/addon/edit/closebrackets.js"]
-   ["codemirror/addon/edit/matchbrackets.js"]
-   ["codemirror/addon/hint/show-hint.js"]
-   ["codemirror/addon/runmode/colorize.js"]
-   ["codemirror/addon/runmode/runmode.js"]
-   ["codemirror/mode/clojure/clojure.js"]
-   ["codemirror/mode/javascript/javascript.js"]
+   ["@codemirror/view" :refer [EditorView]]
+   ["@codemirror/language" :refer [StreamLanguage syntaxHighlighting]]
+   ["@codemirror/lang-css" :as css]
+   ["@codemirror/lang-javascript" :as javascript]
+   ["@codemirror/legacy-modes/mode/clojure" :as clojure]
    ["react" :as react]
    [clojure.string :as str]
    [reagent.core :as r]))
@@ -171,21 +168,22 @@
               cancel-keys #{13 27}
               cmp-ignore #{9 16 17 18 91 93}
               cmp-show #{17 18 91 93}
-              inst (codemirror
-                    el
+              inst (EditorView.
+
                     (clj->js
-                     (merge
-                      {:lineNumbers false
-                       :viewportMargin js/Infinity
-                       :matchBrackets true
-                       :lineWrapping true
-                       :theme "tomorrow-night-eighties"
-                       :autofocus false
-                       :extraKeys #js {"Shift-Enter" "newlineAndIndent"}
-                       :value @value-atom
-                       :autoCloseBrackets true
-                       :mode "clojure"}
-                      js-cm-opts)))]
+                     {:parent el}
+                     #_(merge
+                        {:lineNumbers false
+                         :viewportMargin js/Infinity
+                         :matchBrackets true
+                         :lineWrapping true
+                         :theme "tomorrow-night-eighties"
+                         :autofocus false
+                         :extraKeys #js {"Shift-Enter" "newlineAndIndent"}
+                         :value @value-atom
+                         :autoCloseBrackets true
+                         :mode "clojure"}
+                        js-cm-opts)))]
 
           (reset! cm inst)
           (.on inst "change"
@@ -254,20 +252,20 @@
         [:div {:ref ref
                :style style}])})))
 
-(defn colored-text [text style]
-  (let [ref (react/createRef)]
-    (r/create-class
-     {:component-did-mount
-      (fn [_this]
-        (let [node (.-current ref)]
-          ((aget codemirror "colorize") #js[node] "clojure")
+#_(defn colored-text [text style]
+    (let [ref (react/createRef)]
+      (r/create-class
+       {:component-did-mount
+        (fn [_this]
+          (let [node (.-current ref)]
+            ((aget codemirror "colorize") #js[node] "clojure")
         ;; Hacky way to remove the default theme class added by CodeMirror.colorize
         ;; https://codemirror.net/addon/runmode/colorize.js
-          (-> node .-classList (.remove  "cm-s-default"))))
+            (-> node .-classList (.remove  "cm-s-default"))))
 
-      :reagent-render
-      (fn [_]
-        [:pre.cm-s-tomorrow-night-eighties
-         {:style (merge {:padding 0 :margin 0} style)
-          :ref ref}
-         text])})))
+        :reagent-render
+        (fn [_]
+          [:pre.cm-s-tomorrow-night-eighties
+           {:style (merge {:padding 0 :margin 0} style)
+            :ref ref}
+           text])})))

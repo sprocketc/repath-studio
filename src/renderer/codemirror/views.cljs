@@ -1,10 +1,10 @@
 (ns renderer.codemirror.views
   (:require
-   ["codemirror" :as codemirror]
-   ["codemirror/addon/hint/css-hint.js"]
-   ["codemirror/addon/hint/show-hint.js"]
-   ["codemirror/mode/css/css.js"]
-   ["codemirror/mode/xml/xml.js"]
+   ["@codemirror/view" :refer [EditorView]]
+   ["@codemirror/language" :refer [StreamLanguage syntaxHighlighting]]
+   ["@codemirror/lang-css" :as css]
+   ["@codemirror/lang-xml" :as xml]
+
    ["react" :as react]
    [reagent.core :as ra]))
 
@@ -20,16 +20,16 @@
    :autoCloseBrackets true
    :mode "css"})
 
-(defn on-render-line
-  "Line up wrapped text with the base indentation.
+#_(defn on-render-line
+    "Line up wrapped text with the base indentation.
    https://codemirror.net/demo/indentwrap.html"
-  [editor line el]
-  (let [off (* (.countColumn codemirror (.-text line) nil (.getOption editor "tabSize"))
-               (.defaultCharWidth editor))]
-    (set! (.. el -style -textIndent)
-          (str "-" off "px"))
-    (set! (.. el -style -paddingLeft)
-          (str (+ 4 off) "px"))))
+    [editor line el]
+    (let [off (* (.countColumn codemirror (.-text line) nil (.getOption editor "tabSize"))
+                 (.defaultCharWidth editor))]
+      (set! (.. el -style -textIndent)
+            (str "-" off "px"))
+      (set! (.. el -style -paddingLeft)
+            (str (+ 4 off) "px"))))
 
 (defn editor
   [value {:keys [style options on-init on-blur]}]
@@ -40,9 +40,10 @@
       (fn [_this]
         (let [el (.-current ref)
               options (clj->js (merge default-options options))]
-          (reset! cm (.fromTextArea codemirror el options))
+          (reset! cm (EditorView. (clj->js {:parent el})))
+          #_(.fromTextArea codemirror el options)
           (.setValue @cm value)
-          (.on @cm "renderLine" on-render-line)
+          #_(.on @cm "renderLine" on-render-line)
           (.on @cm "keydown" (fn [_editor evt] (.stopPropagation evt)))
           (.on @cm "keyup" (fn [_editor evt] (.stopPropagation evt)))
           (.refresh @cm)
